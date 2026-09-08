@@ -1,0 +1,13 @@
+flask
+flask_sqlalchemy
+flask_jwt_extended
+flask_cors
+flask-socketio
+eventlet
+scikit-learn
+pandas
+numpy
+tensorflow==2.17.0
+pillow
+scipy
+matplotlib

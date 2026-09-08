@@ -1,0 +1,90 @@
+/* content.css - Styles for SafeBrowse overlays injected into pages */
+
+/* ─── Image wrapper & overlay ──────────────────────────────────────────────── */
+.safebrowse-wrapper {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  line-height: 0;
+}
+
+.safebrowse-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  z-index: 9999;
+  cursor: default;
+}
+
+.safebrowse-warning {
+  text-align: center;
+  padding: 16px 20px;
+  color: #f1f5f9;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  max-width: 200px;
+}
+
+.safebrowse-warning .sb-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.safebrowse-warning .sb-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #f8fafc;
+}
+
+.safebrowse-warning .sb-subtitle {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.safebrowse-warning .sb-reveal-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #cbd5e1;
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.safebrowse-warning .sb-reveal-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  color: #f1f5f9;
+}
+
+/* ─── Text badge ───────────────────────────────────────────────────────────── */
+.safebrowse-text-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #1e293b;
+  color: #94a3b8;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin: 4px 0;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.safebrowse-text-badge:hover {
+  background: #334155;
+  color: #cbd5e1;
+}

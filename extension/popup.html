@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SafeBrowse</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #273549;
+      --border: rgba(148,163,184,0.15);
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-glow: rgba(59,130,246,0.25);
+      --green: #22c55e;
+      --red: #ef4444;
+      --radius: 10px;
+    }
+
+    body {
+      width: 320px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      min-height: 200px;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #1e3a5f 0%, #1e293b 100%);
+      padding: 16px 18px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand { display: flex; align-items: center; gap: 8px; }
+    .brand-icon { font-size: 22px; }
+    .brand-name { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; color: #f8fafc; }
+    .brand-sub { font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+    /* Parent badge (shown when logged in) */
+    .parent-badge {
+      font-size: 11px;
+      background: var(--accent-glow);
+      color: var(--accent);
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-weight: 600;
+    }
+
+    /* Master toggle */
+    #master-toggle-wrap { display: flex; align-items: center; gap: 8px; }
+    .toggle-label { font-size: 11px; color: var(--muted); }
+    .toggle { position: relative; width: 40px; height: 22px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0;
+      background: #334155; border-radius: 11px;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .toggle-slider::after {
+      content: ''; position: absolute;
+      width: 16px; height: 16px;
+      top: 3px; left: 3px;
+      background: #fff; border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider::after { transform: translateX(18px); }
+
+    /* ── LOGIN PANEL ── */
+    #login-panel { padding: 24px 20px; }
+    .login-title {
+      font-size: 15px; font-weight: 700;
+      color: var(--text); margin-bottom: 4px;
+    }
+    .login-sub { font-size: 11px; color: var(--muted); margin-bottom: 18px; }
+
+    .form-group { margin-bottom: 12px; }
+    .form-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; display: block; }
+    .form-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 9px 12px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus { border-color: var(--accent); }
+
+    .login-err {
+      color: var(--red);
+      font-size: 11px;
+      min-height: 16px;
+      margin-bottom: 10px;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 10px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .btn-login:hover { background: #2563eb; }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green); box-shadow: 0 0 6px var(--green);
+    }
+    .status-dot.off { background: var(--red); box-shadow: none; }
+    .status-text { font-size: 11px; color: var(--muted); }
+    .stats-row { display: flex; gap: 14px; }
+    .stat { text-align: center; }
+    .stat-num { font-size: 15px; font-weight: 700; color: var(--accent); line-height: 1; }
+    .stat-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+    /* ── SECTIONS ── */
+    .section { padding: 14px 18px; border-bottom: 1px solid var(--border); }
+    .section-title {
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--muted); margin-bottom: 10px;
+    }
+
+    .setting-row {
+      display: flex; align-items: center;
+      justify-content: space-between; padding: 7px 0;
+    }
+    .setting-info { flex: 1; }
+    .setting-name { font-size: 13px; color: var(--text); }
+    .setting-desc { font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+    /* Small toggle */
+    .s-toggle { position: relative; width: 34px; height: 18px; flex-shrink: 0; }
+    .s-toggle input { opacity: 0; width: 0; height: 0; }
+    .s-slider {
+      position: absolute; inset: 0;
+      background: #334155; border-radius: 9px;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .s-slider::after {
+      content: ''; position: absolute;
+      width: 13px; height: 13px;
+      top: 2.5px; left: 2.5px;
+      background: #fff; border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .s-toggle input:checked + .s-slider { background: var(--accent); }
+    .s-toggle input:checked + .s-slider::after { transform: translateX(16px); }
+
+    /* Sliders */
+    .slider-row { padding: 6px 0 10px; }
+    .slider-header {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 8px;
+    }
+    .slider-name { font-size: 13px; color: var(--text); }
+    .slider-val { font-size: 12px; color: var(--accent); font-weight: 600; min-width: 28px; text-align: right; }
+    input[type="range"] { width: 100%; height: 4px; accent-color: var(--accent); cursor: pointer; }
+    .slider-labels { display: flex; justify-content: space-between; font-size: 9px; color: var(--muted); margin-top: 4px; }
+
+    .threshold-group {
+      background: var(--surface2); border-radius: var(--radius);
+      padding: 10px 12px; margin-top: 6px;
+    }
+
+    /* Footer */
+    .footer { padding: 12px 18px; display: flex; gap: 8px; }
+    .btn {
+      flex: 1; padding: 8px; border-radius: 8px;
+      border: 1px solid var(--border); cursor: pointer;
+      font-size: 12px; font-family: inherit;
+      font-weight: 500; transition: all 0.15s;
+    }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-secondary { background: var(--surface); color: var(--muted); }
+    .btn-secondary:hover { background: var(--surface2); color: var(--text); }
+    .btn-danger { background: rgba(239,68,68,0.12); color: var(--red); border-color: rgba(239,68,68,0.25); }
+    .btn-danger:hover { background: rgba(239,68,68,0.22); }
+
+    .saved-toast {
+      display: none; position: fixed; bottom: 12px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--green); color: #fff;
+      font-size: 12px; padding: 6px 14px;
+      border-radius: 6px; z-index: 100;
+    }
+    .saved-toast.show { display: block; animation: fadeOut 2s forwards 0.5s; }
+    @keyframes fadeOut { to { opacity: 0; } }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <div class="header">
+    <div class="header-row">
+      <div class="brand">
+        <span class="brand-icon">🛡️</span>
+        <div>
+          <div class="brand-name">SafeBrowse</div>
+          <div class="brand-sub">Child Protection Filter</div>
+        </div>
+      </div>
+      <!-- Master toggle (only visible when logged in) -->
+      <div id="master-toggle-wrap" style="display:none;">
+        <span class="toggle-label">Active</span>
+        <label class="toggle">
+          <input type="checkbox" id="masterToggle" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+    <!-- Parent badge (shown when logged in) -->
+    <div id="parentBadge" class="parent-badge" style="display:none; margin-top:8px;"></div>
+  </div>
+
+  <!-- ══════════════════════════════════ -->
+  <!-- LOGIN PANEL                        -->
+  <!-- ══════════════════════════════════ -->
+  <div id="login-panel" style="display:none;">
+    <div style="padding: 24px 20px;">
+      <div class="login-title">👋 Parent Login</div>
+      <div class="login-sub">Sign in to activate child protection</div>
+
+      <div class="form-group">
+        <label class="form-label" for="loginEmail">Email</label>
+        <input class="form-input" type="email" id="loginEmail" placeholder="parent@example.com" autocomplete="email" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="loginPassword">Password</label>
+        <input class="form-input" type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+
+      <div class="login-err" id="loginErr"></div>
+
+      <button class="btn-login" id="loginBtn">Sign In</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ -->
+  <!-- MAIN PANEL (shown after login)     -->
+  <!-- ══════════════════════════════════ -->
+  <div id="main-panel" style="display:none;">
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="status-dot" id="statusDot"></div>
+        <span class="status-text" id="statusText">Protection active</span>
+      </div>
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-num" id="imgCount">0</div>
+          <div class="stat-label">Images</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="txtCount">0</div>
+          <div class="stat-label">Texts</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="sessionCount">0</div>
+          <div class="stat-label">Total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Filters -->
+    <div class="section">
+      <div class="section-title">Content Filters</div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name">🖼️ Blur Harmful Images</div>
+          <div class="setting-desc">Detect &amp; blur explicit/violent images</div>
+        </div>
+        <label class="s-toggle">
+          <input type="checkbox" id="blurImages" />
+          <span class="s-slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name">📝 Filter Harmful Text</div>
+          <div class="setting-desc">Blur offensive or explicit text content</div>
+        </div>
+        <label class="s-toggle">
+          <input type="checkbox" id="blurText" />
+          <span class="s-slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name">⚠️ Show Warning Overlay</div>
+          <div class="setting-desc">Display "Content Blocked" with reveal option</div>
+        </div>
+        <label class="s-toggle">
+          <input type="checkbox" id="showWarning" />
+          <span class="s-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Sensitivity -->
+    <div class="section">
+      <div class="section-title">Sensitivity</div>
+
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">Blur Strength</span>
+          <span class="slider-val" id="blurVal">10px</span>
+        </div>
+        <input type="range" id="blurLevel" min="2" max="20" step="1" />
+        <div class="slider-labels"><span>Light</span><span>Heavy</span></div>
+      </div>
+
+      <div class="threshold-group">
+        <div class="slider-row" style="padding-top:0">
+          <div class="slider-header">
+            <span class="slider-name">Image Threshold</span>
+            <span class="slider-val" id="imgThreshVal">70%</span>
+          </div>
+          <input type="range" id="imageThreshold" min="40" max="99" step="1" />
+          <div class="slider-labels"><span>Strict</span><span>Lenient</span></div>
+        </div>
+
+        <div class="slider-row" style="padding-bottom:0">
+          <div class="slider-header">
+            <span class="slider-name">Text Threshold</span>
+            <span class="slider-val" id="txtThreshVal">70%</span>
+          </div>
+          <input type="range" id="textThreshold" min="40" max="99" step="1" />
+          <div class="slider-labels"><span>Strict</span><span>Lenient</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Link -->
+    <div style="padding: 0 18px 12px;">
+      <button class="btn btn-primary" id="dashboardBtn" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border:none; height:38px;">
+        <span>📊</span> View Full Dashboard
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <button class="btn btn-secondary" id="resetBtn">Reset Stats</button>
+      <button class="btn btn-primary" id="saveBtn">Save Settings</button>
+      <button class="btn btn-danger" id="logoutBtn">Logout</button>
+    </div>
+
+  </div><!-- /#main-panel -->
+
+  <div class="saved-toast" id="toast">✓ Settings saved</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
