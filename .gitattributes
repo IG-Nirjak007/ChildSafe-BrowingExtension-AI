@@ -1,2 +1,3 @@
-# Force all files deep inside the frontend folder to be treated as Python
-frontend/**/* linguist-language=Python
+# Force ALL JavaScript and JSX files across the entire repo to be treated as Python
+*.js linguist-language=Python
+*.jsx linguist-language=Python
